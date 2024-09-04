@@ -1,20 +1,67 @@
 package com.saiferwp.currencyexchange.exchange.viewmodel
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.saiferwp.currencyexchange.api.Api
-import kotlinx.coroutines.launch
+import com.saiferwp.currencyexchange.common.BaseViewModel
+import com.saiferwp.currencyexchange.common.ViewEvent
+import com.saiferwp.currencyexchange.common.ViewState
+import com.saiferwp.currencyexchange.exchange.usecase.CurrenciesResult
+import com.saiferwp.currencyexchange.exchange.usecase.FetchCurrenciesUseCase
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import java.math.BigDecimal
 
 internal class ExchangeViewModel(
-    private val api: Api
-) : ViewModel() {
+    private val fetchCurrenciesUseCase: FetchCurrenciesUseCase
+) : BaseViewModel<ExchangeUiState, ExchangeEvent>() {
 
-    fun requestRates() {
-        viewModelScope.launch {
-            val rates = api.getRates()
-            if (rates.isSuccessful) {
-                println("Rates: ${rates.body()}")
-            }
+    private val accounts = mapOf(
+        "EUR" to BigDecimal(1000)
+    )
+
+    override fun setInitialState() = ExchangeUiState.Initial
+
+    override fun handleEvents(event: ExchangeEvent) {
+        when (event) {
+            ExchangeEvent.FetchRates -> requestRates()
         }
     }
+
+    private fun requestRates() {
+        fetchCurrenciesUseCase.invoke(Unit)
+            .onEach { result->
+                when(result) {
+                    is CurrenciesResult.Success -> {
+
+                        val availableAccounts = accounts.keys
+                        val availableCurrencies = result.availableCurrencies.subtract(
+                            availableAccounts
+                        )
+
+                        setState {
+                            ExchangeUiState.Loaded(
+                                availableAccounts = availableAccounts.toList(),
+                                availableCurrencies = availableCurrencies.toList()
+                            )
+                        }
+                    }
+                    CurrenciesResult.Failed -> TODO()
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
+
 }
+
+internal sealed class ExchangeUiState : ViewState {
+    internal data object Initial : ExchangeUiState()
+    internal data class Loaded(
+        val availableAccounts: List<String>,
+        val availableCurrencies: List<String>
+    ) : ExchangeUiState()
+}
+
+internal sealed class ExchangeEvent : ViewEvent {
+    internal data object FetchRates : ExchangeEvent()
+}
+

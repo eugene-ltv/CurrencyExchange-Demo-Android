@@ -1,6 +1,7 @@
 package com.saiferwp.currencyexchange.di
 
 import com.saiferwp.currencyexchange.api.buildRemoteApiService
+import com.saiferwp.currencyexchange.exchange.usecase.FetchCurrenciesUseCase
 import com.saiferwp.currencyexchange.exchange.viewmodel.ExchangeViewModel
 import com.saiferwp.currencyexchange.utils.BigDecimalsTypeAdapter
 import com.squareup.moshi.Moshi
@@ -18,5 +19,6 @@ val networkModule = module {
 }
 
 val appModule = module {
+    factory { FetchCurrenciesUseCase(get()) }
     viewModel { ExchangeViewModel(get()) }
 }
