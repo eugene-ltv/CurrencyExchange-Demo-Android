@@ -8,6 +8,7 @@ import com.saiferwp.currencyexchange.exchange.usecase.CurrenciesResult
 import com.saiferwp.currencyexchange.exchange.usecase.FetchCurrenciesUseCase
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import java.math.BigDecimal
 
 internal class ExchangeViewModel(
@@ -28,6 +29,9 @@ internal class ExchangeViewModel(
 
     private fun requestRates() {
         fetchCurrenciesUseCase.invoke(Unit)
+            .onStart {
+                setState { ExchangeUiState.Loading }
+            }
             .onEach { result->
                 when(result) {
                     is CurrenciesResult.Success -> {
@@ -55,6 +59,7 @@ internal class ExchangeViewModel(
 
 internal sealed class ExchangeUiState : ViewState {
     internal data object Initial : ExchangeUiState()
+    internal data object Loading : ExchangeUiState()
     internal data class Loaded(
         val availableAccounts: List<String>,
         val availableCurrencies: List<String>

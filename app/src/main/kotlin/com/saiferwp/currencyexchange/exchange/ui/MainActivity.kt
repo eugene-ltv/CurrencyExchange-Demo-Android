@@ -1,6 +1,7 @@
 package com.saiferwp.currencyexchange.exchange.ui
 
 import android.os.Bundle
+import android.view.View
 import android.widget.ArrayAdapter
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -25,15 +26,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(mainBinding.root)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.exchange_main_layout)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
         exchangeViewModel.sendEvent(ExchangeEvent.FetchRates)
-
-
 
         subscribeToViewState()
     }
@@ -45,23 +44,37 @@ class MainActivity : AppCompatActivity() {
                     ExchangeUiState.Initial -> {
                         // do nothing
                     }
-                    is ExchangeUiState.Loaded -> {
-                        setupSelectors(state)
+                    ExchangeUiState.Loading -> {
+                        showLoading()
+                    }
 
+                    is ExchangeUiState.Loaded -> {
+                        hideLoading()
+                        setupSelectors(state)
                     }
                 }
             }
         }
     }
 
+    private fun showLoading() {
+        mainBinding.exchangeContentLayout.visibility = View.GONE
+        mainBinding.exchangeLoadingProgress.visibility = View.VISIBLE
+    }
+
+    private fun hideLoading() {
+        mainBinding.exchangeLoadingProgress.visibility = View.GONE
+        mainBinding.exchangeContentLayout.visibility = View.VISIBLE
+    }
+
     private fun setupSelectors(state: ExchangeUiState.Loaded) {
-        mainBinding.sellCurrencySelector.adapter = ArrayAdapter(
+        mainBinding.exchangeSellCurrencySelector.adapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_item,
             state.availableAccounts
         ).apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
 
-        mainBinding.receiveCurrencySelector.adapter = ArrayAdapter(
+        mainBinding.exchangeReceiveCurrencySelector.adapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_item,
             state.availableCurrencies

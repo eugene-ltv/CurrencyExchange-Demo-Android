@@ -1,84 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+    android:id="@+id/exchange_main_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".exchange.ui.MainActivity">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="@string/title"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/exchange_content_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/sell_input_layout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="16dp"
-        android:hint="@string/sell"
-        app:layout_constraintEnd_toStartOf="@+id/sell_currency_selector"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/title">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/sell_input"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/exchange_title"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="end"
-            android:imeOptions="actionDone"
-            android:inputType="numberDecimal" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginStart="@dimen/standard_margin"
+            android:layout_marginTop="@dimen/standard_margin"
+            android:text="@string/title"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <Spinner
-        android:id="@+id/sell_currency_selector"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/exchange_sell_input_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/standard_margin"
+            android:layout_marginTop="@dimen/standard_margin"
+            android:hint="@string/sell"
+            app:layout_constraintEnd_toStartOf="@+id/exchange_sell_currency_selector"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/exchange_title">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/exchange_sell_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:imeOptions="actionDone"
+                android:inputType="numberDecimal" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Spinner
+            android:id="@+id/exchange_sell_currency_selector"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/standard_margin"
+            android:layout_marginEnd="@dimen/standard_margin"
+            app:layout_constraintBottom_toBottomOf="@+id/exchange_sell_input_layout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/exchange_sell_input_layout"
+            app:layout_constraintTop_toTopOf="@+id/exchange_sell_input_layout" />
+
+        <TextView
+            android:id="@+id/exchange_receive_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/standard_margin"
+            android:text="@string/receive"
+            app:layout_constraintBottom_toBottomOf="@id/exchange_receive_input"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/exchange_receive_input" />
+
+        <TextView
+            android:id="@+id/exchange_receive_input"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/standard_margin"
+            android:layout_marginTop="20dp"
+            android:text="100 USD"
+            android:textSize="20sp"
+            app:layout_constraintEnd_toStartOf="@+id/exchange_receive_currency_selector"
+            app:layout_constraintHorizontal_bias="1"
+            app:layout_constraintStart_toEndOf="@+id/exchange_receive_title"
+            app:layout_constraintTop_toBottomOf="@+id/exchange_sell_input_layout"
+            tools:ignore="HardcodedText" />
+
+        <Spinner
+            android:id="@+id/exchange_receive_currency_selector"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/standard_margin"
+            android:layout_marginEnd="@dimen/standard_margin"
+            app:layout_constraintBottom_toBottomOf="@+id/exchange_receive_input"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/exchange_receive_input" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ProgressBar
+        android:id="@+id/exchange_loading_progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@+id/sell_input_layout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/sell_input_layout"
-        app:layout_constraintTop_toTopOf="@+id/sell_input_layout" />
-
-    <TextView
-        android:id="@+id/receive_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:text="@string/receive"
-        app:layout_constraintBottom_toBottomOf="@id/receive_input"
-        app:layout_constraintHorizontal_chainStyle="spread_inside"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/receive_input" />
-
-    <TextView
-        android:id="@+id/receive_input"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="16dp"
-        android:text="100 USD"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="@+id/receive_currency_selector"
-        app:layout_constraintStart_toEndOf="@+id/receive_title"
-        app:layout_constraintTop_toBottomOf="@+id/sell_input_layout"
-        tools:ignore="HardcodedText" />
-
-    <Spinner
-        android:id="@+id/receive_currency_selector"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@+id/receive_input"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/receive_input"
-        app:layout_constraintTop_toTopOf="@+id/receive_input" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:layout_gravity="center" />
+</FrameLayout>
