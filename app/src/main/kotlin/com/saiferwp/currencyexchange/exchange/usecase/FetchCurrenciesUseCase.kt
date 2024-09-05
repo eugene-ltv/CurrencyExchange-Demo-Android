@@ -15,6 +15,7 @@ internal class FetchCurrenciesUseCase(
         val responseBody = response.body()
         val result = if (response.isSuccessful && responseBody != null) {
             CurrenciesResult.Success(
+                baseCurrency = responseBody.base,
                 rates = responseBody.rates
             )
         } else {
@@ -27,6 +28,7 @@ internal class FetchCurrenciesUseCase(
 
 internal sealed class CurrenciesResult {
     internal data class Success(
+        val baseCurrency: String,
         val rates: Map<String, BigDecimal>
     ) : CurrenciesResult()
 

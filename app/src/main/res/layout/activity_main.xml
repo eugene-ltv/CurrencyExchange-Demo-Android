@@ -85,6 +85,16 @@
             app:layout_constraintBottom_toBottomOf="@+id/exchange_receive_input"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/exchange_receive_input" />
+
+        <Button
+            android:id="@+id/exchange_confirm_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/standard_margin"
+            android:layout_marginTop="24dp"
+            android:text="@string/submit"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/exchange_receive_title" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ProgressBar

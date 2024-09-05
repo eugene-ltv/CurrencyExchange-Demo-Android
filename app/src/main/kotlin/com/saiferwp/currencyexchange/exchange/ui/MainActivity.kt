@@ -57,12 +57,12 @@ class MainActivity : AppCompatActivity() {
                         hideLoading()
                         setupSelectors(state)
                         setupInputs()
+                        setupButton()
                     }
 
                     is ExchangeUiState.CalculatedReceiveAmount -> {
                         mainBinding.exchangeReceiveInput.text =
-                            String.format(Locale.getDefault(), "%f", state.receiveAmount)
-                        println(state.receiveAmount)
+                            String.format(Locale.getDefault(), "%.2f", state.receiveAmount)
                     }
                 }
             }
@@ -85,6 +85,16 @@ class MainActivity : AppCompatActivity() {
             android.R.layout.simple_spinner_item,
             state.availableAccounts
         ).apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
+        mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, id: Int, p3: Long) {
+                    exchangeViewModel.sendEvent(ExchangeEvent.SellCurrencySelected(id))
+                }
+
+                override fun onNothingSelected(p0: AdapterView<*>?) {
+                    // do nothing
+                }
+            }
 
         mainBinding.exchangeReceiveCurrencySelector.adapter = ArrayAdapter(
             this,
@@ -94,7 +104,7 @@ class MainActivity : AppCompatActivity() {
         mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(p0: AdapterView<*>?, p1: View?, id: Int, p3: Long) {
-                    exchangeViewModel.sendEvent(ExchangeEvent.CurrencyForExchangeSelected(id))
+                    exchangeViewModel.sendEvent(ExchangeEvent.ReceiveCurrencySelected(id))
                 }
 
                 override fun onNothingSelected(p0: AdapterView<*>?) {
@@ -113,6 +123,12 @@ class MainActivity : AppCompatActivity() {
                     ExchangeEvent.SellInputChanged(text.toString())
                 )
             }
+        }
+    }
+
+    private fun setupButton() {
+        mainBinding.exchangeConfirmBtn.setOnClickListener {
+            exchangeViewModel.sendEvent(ExchangeEvent.SubmitExchange)
         }
     }
 }
