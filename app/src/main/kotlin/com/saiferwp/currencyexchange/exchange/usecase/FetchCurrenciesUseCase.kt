@@ -4,6 +4,7 @@ import com.saiferwp.currencyexchange.api.Api
 import com.saiferwp.currencyexchange.common.FlowUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import java.math.BigDecimal
 
 internal class FetchCurrenciesUseCase(
     private val api: Api
@@ -14,7 +15,7 @@ internal class FetchCurrenciesUseCase(
         val responseBody = response.body()
         val result = if (response.isSuccessful && responseBody != null) {
             CurrenciesResult.Success(
-                availableCurrencies = responseBody.rates.keys.toList()
+                rates = responseBody.rates
             )
         } else {
             CurrenciesResult.Failed
@@ -26,7 +27,7 @@ internal class FetchCurrenciesUseCase(
 
 internal sealed class CurrenciesResult {
     internal data class Success(
-        val availableCurrencies: List<String>
+        val rates: Map<String, BigDecimal>
     ) : CurrenciesResult()
 
     internal data object Failed : CurrenciesResult()
