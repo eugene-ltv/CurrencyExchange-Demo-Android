@@ -39,32 +39,59 @@ class MainActivity : AppCompatActivity() {
         exchangeViewModel.sendEvent(ExchangeEvent.FetchRates)
 
         subscribeToViewState()
+
+        initViews()
+    }
+
+    private fun initViews() {
+        mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, id: Int, p3: Long) {
+                    exchangeViewModel.sendEvent(ExchangeEvent.SellCurrencySelected(id))
+                }
+
+                override fun onNothingSelected(p0: AdapterView<*>?) {
+                    // do nothing
+                }
+            }
+
+        mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, id: Int, p3: Long) {
+                    exchangeViewModel.sendEvent(ExchangeEvent.ReceiveCurrencySelected(id))
+                }
+
+                override fun onNothingSelected(p0: AdapterView<*>?) {
+                    // do nothing
+                }
+            }
+
+        with(mainBinding.exchangeSellInput) {
+            filters = arrayOf(MoneyAmountInputFilter())
+            doOnTextChanged { text, _, _, _ ->
+                exchangeViewModel.sendEvent(
+                    ExchangeEvent.SellInputChanged(text.toString())
+                )
+            }
+        }
     }
 
     private fun subscribeToViewState() {
         launchAndRepeatOnLifecycleStarted {
             exchangeViewModel.viewState.collect { state ->
-                when (state) {
-                    ExchangeUiState.Initial -> {
-                        // do nothing
-                    }
-
-                    ExchangeUiState.Loading -> {
-                        showLoading()
-                    }
-
-                    is ExchangeUiState.Loaded -> {
-                        hideLoading()
-                        setupSelectors(state)
-                        setupInputs()
-                        setupButton()
-                    }
-
-                    is ExchangeUiState.CalculatedReceiveAmount -> {
-                        mainBinding.exchangeReceiveInput.text =
-                            String.format(Locale.getDefault(), "%.2f", state.receiveAmount)
-                    }
+                if (state.isLoading) {
+                    showLoading()
+                    return@collect
+                } else {
+                    hideLoading()
                 }
+
+                setupSelectors(state)
+                setupButton()
+
+                mainBinding.exchangeReceiveInput.text =
+                    String.format(Locale.getDefault(), "%.2f", state.receiveAmount)
+
             }
         }
     }
@@ -79,51 +106,30 @@ class MainActivity : AppCompatActivity() {
         mainBinding.exchangeContentLayout.visibility = View.VISIBLE
     }
 
-    private fun setupSelectors(state: ExchangeUiState.Loaded) {
+    private fun setupSelectors(state: ExchangeUiState) {
+        val listener = mainBinding.exchangeSellCurrencySelector.onItemSelectedListener
+        mainBinding.exchangeSellCurrencySelector.onItemSelectedListener = null
         mainBinding.exchangeSellCurrencySelector.adapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_item,
-            state.availableAccounts
+            state.accounts.keys.toList()
         ).apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
-        mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, id: Int, p3: Long) {
-                    exchangeViewModel.sendEvent(ExchangeEvent.SellCurrencySelected(id))
-                }
+        mainBinding.exchangeSellCurrencySelector.setSelection(
+            state.accounts.keys.toList().indexOf(state.selectedCurrencyForSell)
+        )
+        mainBinding.exchangeSellCurrencySelector.onItemSelectedListener = listener
 
-                override fun onNothingSelected(p0: AdapterView<*>?) {
-                    // do nothing
-                }
-            }
-
+        val listener2 = mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener
+        mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener = null
         mainBinding.exchangeReceiveCurrencySelector.adapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_item,
-            state.availableCurrenciesForExchange
+            state.availableCurrenciesForReceive
         ).apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
-        mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, id: Int, p3: Long) {
-                    exchangeViewModel.sendEvent(ExchangeEvent.ReceiveCurrencySelected(id))
-                }
-
-                override fun onNothingSelected(p0: AdapterView<*>?) {
-                    // do nothing
-                }
-            }
-    }
-
-    private fun setupInputs() {
-        mainBinding.exchangeReceiveInput.text = "0"
-
-        with(mainBinding.exchangeSellInput) {
-            filters = arrayOf(MoneyAmountInputFilter())
-            doOnTextChanged { text, _, _, _ ->
-                exchangeViewModel.sendEvent(
-                    ExchangeEvent.SellInputChanged(text.toString())
-                )
-            }
-        }
+        mainBinding.exchangeReceiveCurrencySelector.setSelection(
+            state.availableCurrenciesForReceive.indexOf(state.selectedCurrencyForReceive)
+        )
+        mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener = listener2
     }
 
     private fun setupButton() {

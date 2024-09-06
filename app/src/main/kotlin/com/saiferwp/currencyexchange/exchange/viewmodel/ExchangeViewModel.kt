@@ -19,36 +19,46 @@ internal class ExchangeViewModel(
 
     private var numberOfSuccessfulExchanges = 0
 
-    private val accounts = mutableMapOf(
-        "EUR" to BigDecimal(1000)
+    override fun setInitialState() = ExchangeUiState(
+        isLoading = false,
+        accounts = mutableMapOf(
+            "EUR" to BigDecimal(1000)
+            ),
+        baseCurrency = "EUR",
+        rates = mutableMapOf(),
+        availableCurrenciesForReceive = emptyList(),
+        selectedCurrencyForSell = "EUR",
+        selectedCurrencyForReceive = "EUR",
+        sellAmount = BigDecimal.ZERO,
+        receiveAmount = BigDecimal.ZERO
     )
-
-    private var baseCurrency: String? = null
-    private val rates: MutableMap<String, BigDecimal> = mutableMapOf()
-    private var availableCurrenciesForReceive: List<String> = emptyList()
-
-    // todo init gracefully
-    private var selectedCurrencyForSell: String? = "EUR"
-    private var selectedCurrencyForReceive: String? = null
-    private var sellAmount: BigDecimal = BigDecimal.ZERO
-
-    override fun setInitialState() = ExchangeUiState.Initial
 
     override fun handleEvents(event: ExchangeEvent) {
         when (event) {
             ExchangeEvent.FetchRates -> requestRates()
             is ExchangeEvent.SellInputChanged -> {
-                val amount = BigDecimal(event.input)
-                sellAmount = amount
+                setState {
+                    copy(
+                        sellAmount = BigDecimal(event.input)
+                    )
+                }
                 updateReceiveValue()
             }
 
             is ExchangeEvent.SellCurrencySelected -> {
-                selectedCurrencyForSell = accounts.keys.toList()[event.id]
+                setState {
+                    copy(
+                        selectedCurrencyForSell = accounts.keys.toList()[event.id]
+                    )
+                }
             }
 
             is ExchangeEvent.ReceiveCurrencySelected -> {
-                selectedCurrencyForReceive = availableCurrenciesForReceive[event.id]
+                setState {
+                    copy(
+                        selectedCurrencyForReceive = availableCurrenciesForReceive[event.id]
+                    )
+                }
                 updateReceiveValue()
             }
 
@@ -59,24 +69,27 @@ internal class ExchangeViewModel(
     private fun requestRates() {
         fetchCurrenciesUseCase.invoke(Unit)
             .onStart {
-                setState { ExchangeUiState.Loading }
+                setState {
+                    copy(
+                        isLoading = true
+                    )
+                }
             }
             .onEach { result ->
                 when (result) {
                     is CurrenciesResult.Success -> {
-                        rates.putAll(result.rates)
-                        baseCurrency = result.baseCurrency
-
-                        val availableAccounts = accounts.keys
+                        val availableCurrencies = viewState.value.accounts.keys
                         val allAvailableCurrencies = result.rates.keys.toList()
-                        availableCurrenciesForReceive = allAvailableCurrencies.minus(
-                            availableAccounts
+                        val availableCurrenciesForReceive = allAvailableCurrencies.minus(
+                            availableCurrencies
                         )
 
                         setState {
-                            ExchangeUiState.Loaded(
-                                availableAccounts = availableAccounts.toList(),
-                                availableCurrenciesForExchange = availableCurrenciesForReceive
+                            copy(
+                                isLoading = false,
+                                baseCurrency = result.baseCurrency,
+                                rates = result.rates,
+                                availableCurrenciesForReceive = availableCurrenciesForReceive
                             )
                         }
                     }
@@ -88,55 +101,50 @@ internal class ExchangeViewModel(
     }
 
     private fun updateReceiveValue() {
-        if (selectedCurrencyForReceive == null) return
-
         val receiveAmount = calculateReceiveAmount()
 
         setState {
-            ExchangeUiState.CalculatedReceiveAmount(
+            copy(
                 receiveAmount = receiveAmount
             )
         }
     }
 
     private fun calculateReceiveAmount(): BigDecimal {
-        return if (selectedCurrencyForSell == baseCurrency) {
-            val exchangeRate = rates[selectedCurrencyForReceive] ?: return BigDecimal.ZERO
-            multiplyAndScaleToCents(sellAmount, exchangeRate)
+        val state = viewState.value
+
+        return if (state.selectedCurrencyForSell == state.baseCurrency) {
+            val exchangeRate = state.rates[state.selectedCurrencyForReceive] ?: return BigDecimal.ZERO
+            multiplyAndScaleToCents(state.sellAmount, exchangeRate)
         } else {
-            val sellExchangeRate = rates[selectedCurrencyForSell] ?: BigDecimal.ZERO
-            val receiveExchangeRate = rates[selectedCurrencyForReceive] ?: BigDecimal.ZERO
+            val sellExchangeRate = state.rates[state.selectedCurrencyForSell] ?: BigDecimal.ZERO
+            val receiveExchangeRate = state.rates[state.selectedCurrencyForReceive] ?: BigDecimal.ZERO
 
             multiplyAndScaleToCents(
-                sellAmount,
+                state.sellAmount,
                 divideAndScaleRates(receiveExchangeRate, sellExchangeRate)
             )
         }
     }
 
     private fun doExchange() {
-        if (baseCurrency == null) return
-        if (selectedCurrencyForSell == null) return
-        if (selectedCurrencyForReceive == null) return
-
         val receiveAmount = calculateReceiveAmount()
 
         println(receiveAmount)
     }
 }
 
-internal sealed class ExchangeUiState : ViewState {
-    internal data object Initial : ExchangeUiState()
-    internal data object Loading : ExchangeUiState()
-    internal data class Loaded(
-        val availableAccounts: List<String>,
-        val availableCurrenciesForExchange: List<String>
-    ) : ExchangeUiState()
-
-    internal data class CalculatedReceiveAmount(
-        val receiveAmount: BigDecimal
-    ) : ExchangeUiState()
-}
+internal data class ExchangeUiState(
+    val isLoading: Boolean,
+    val accounts: Map<String, BigDecimal>,
+    val baseCurrency: String,
+    val rates: Map<String, BigDecimal>,
+    val availableCurrenciesForReceive: List<String>,
+    val selectedCurrencyForSell: String,
+    val selectedCurrencyForReceive: String,
+    val sellAmount: BigDecimal,
+    val receiveAmount: BigDecimal
+) : ViewState
 
 internal sealed class ExchangeEvent : ViewEvent {
     internal data object FetchRates : ExchangeEvent()
