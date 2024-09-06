@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doOnTextChanged
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.saiferwp.currencyexchange.R
 import com.saiferwp.currencyexchange.databinding.ActivityMainBinding
 import com.saiferwp.currencyexchange.exchange.viewmodel.ExchangeEvent
@@ -25,6 +26,8 @@ class MainActivity : AppCompatActivity() {
     private val exchangeViewModel: ExchangeViewModel by viewModel()
 
     private val mainBinding by viewBinding(ActivityMainBinding::inflate)
+
+    private val accountsAdapter = AccountsAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,7 +47,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
-        mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener =
+        mainBinding.exchangeSellCurrencySelector.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(p0: AdapterView<*>?, p1: View?, id: Int, p3: Long) {
                     exchangeViewModel.sendEvent(ExchangeEvent.SellCurrencySelected(id))
@@ -74,6 +77,16 @@ class MainActivity : AppCompatActivity() {
                 )
             }
         }
+
+        mainBinding.exchangeConfirmBtn.setOnClickListener {
+            exchangeViewModel.sendEvent(ExchangeEvent.SubmitExchange)
+            mainBinding.exchangeSellInput.text?.clear()
+        }
+
+        with(mainBinding.exchangeAccountsRecycler) {
+            layoutManager = LinearLayoutManager(this.context)
+            adapter = accountsAdapter
+        }
     }
 
     private fun subscribeToViewState() {
@@ -87,13 +100,17 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 setupSelectors(state)
-                setupButton()
+                setupAccountsRecycler(state)
 
                 mainBinding.exchangeReceiveInput.text =
                     String.format(Locale.getDefault(), "%.2f", state.receiveAmount)
 
             }
         }
+    }
+
+    private fun setupAccountsRecycler(state: ExchangeUiState) {
+        accountsAdapter.setDataSource(state.accounts)
     }
 
     private fun showLoading() {
@@ -130,11 +147,5 @@ class MainActivity : AppCompatActivity() {
             state.availableCurrenciesForReceive.indexOf(state.selectedCurrencyForReceive)
         )
         mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener = listener2
-    }
-
-    private fun setupButton() {
-        mainBinding.exchangeConfirmBtn.setOnClickListener {
-            exchangeViewModel.sendEvent(ExchangeEvent.SubmitExchange)
-        }
     }
 }

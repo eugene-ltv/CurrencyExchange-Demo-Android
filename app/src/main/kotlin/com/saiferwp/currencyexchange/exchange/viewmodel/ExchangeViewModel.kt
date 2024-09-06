@@ -23,7 +23,7 @@ internal class ExchangeViewModel(
         isLoading = false,
         accounts = mutableMapOf(
             "EUR" to BigDecimal(1000)
-            ),
+        ),
         baseCurrency = "EUR",
         rates = mutableMapOf(),
         availableCurrenciesForReceive = emptyList(),
@@ -37,9 +37,15 @@ internal class ExchangeViewModel(
         when (event) {
             ExchangeEvent.FetchRates -> requestRates()
             is ExchangeEvent.SellInputChanged -> {
+
                 setState {
                     copy(
-                        sellAmount = BigDecimal(event.input)
+                        sellAmount =
+                        if (event.input.isNotBlank()) {
+                            BigDecimal(event.input)
+                        } else {
+                            BigDecimal.ZERO
+                        }
                     )
                 }
                 updateReceiveValue()
@@ -48,6 +54,9 @@ internal class ExchangeViewModel(
             is ExchangeEvent.SellCurrencySelected -> {
                 setState {
                     copy(
+                        availableCurrenciesForReceive = rates.keys.minus(
+                            selectedCurrencyForSell
+                        ).toList(),
                         selectedCurrencyForSell = accounts.keys.toList()[event.id]
                     )
                 }
@@ -103,6 +112,9 @@ internal class ExchangeViewModel(
     private fun updateReceiveValue() {
         val receiveAmount = calculateReceiveAmount()
 
+        // todo make checks before exchange
+        // show commission
+        // enable/disable button
         setState {
             copy(
                 receiveAmount = receiveAmount
@@ -114,11 +126,13 @@ internal class ExchangeViewModel(
         val state = viewState.value
 
         return if (state.selectedCurrencyForSell == state.baseCurrency) {
-            val exchangeRate = state.rates[state.selectedCurrencyForReceive] ?: return BigDecimal.ZERO
+            val exchangeRate =
+                state.rates[state.selectedCurrencyForReceive] ?: return BigDecimal.ZERO
             multiplyAndScaleToCents(state.sellAmount, exchangeRate)
         } else {
             val sellExchangeRate = state.rates[state.selectedCurrencyForSell] ?: BigDecimal.ZERO
-            val receiveExchangeRate = state.rates[state.selectedCurrencyForReceive] ?: BigDecimal.ZERO
+            val receiveExchangeRate =
+                state.rates[state.selectedCurrencyForReceive] ?: BigDecimal.ZERO
 
             multiplyAndScaleToCents(
                 state.sellAmount,
@@ -129,8 +143,29 @@ internal class ExchangeViewModel(
 
     private fun doExchange() {
         val receiveAmount = calculateReceiveAmount()
+        val mutableAccounts = viewState.value.accounts.toMutableMap()
 
-        println(receiveAmount)
+        viewState.value.accounts[viewState.value.selectedCurrencyForSell]?.let {
+            val fee = BigDecimal.ZERO
+            val newBalance = it.minus(viewState.value.sellAmount).minus(fee)
+
+            if (newBalance < BigDecimal.ZERO) {
+                return
+            }
+
+            mutableAccounts[viewState.value.selectedCurrencyForSell] = newBalance
+            mutableAccounts[viewState.value.selectedCurrencyForReceive] =
+                mutableAccounts[viewState.value.selectedCurrencyForReceive]?.plus(receiveAmount)
+                    ?: receiveAmount
+        }
+
+        setState {
+            copy(
+                accounts = mutableAccounts.filter {
+                    value -> value.value > BigDecimal.ZERO
+                }
+            )
+        }
     }
 }
 

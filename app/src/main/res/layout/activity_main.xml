@@ -95,6 +95,14 @@
             android:text="@string/submit"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/exchange_receive_title" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/exchange_accounts_recycler"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginTop="44dp"
+            android:scrollbars="vertical"
+            app:layout_constraintTop_toBottomOf="@+id/exchange_confirm_btn" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ProgressBar
