@@ -13,12 +13,12 @@ internal class BigDecimalsTypeAdapter {
     fun toJson(value: BigDecimal) = value.toFloat()
 }
 
-private const val DECIMAL_PLACES = 2
+private const val CENTS_DECIMAL_PLACES = 2
 private const val SCALE_FOR_COMBINING_RATES = 15
 
 internal fun multiplyAndScaleToCents(amount: BigDecimal, exchangeRate: BigDecimal): BigDecimal {
     val convertedAmount = amount.multiply(exchangeRate)
-    return convertedAmount.setScale(DECIMAL_PLACES, RoundingMode.CEILING)
+    return convertedAmount.setScale(CENTS_DECIMAL_PLACES, RoundingMode.CEILING)
 }
 
 internal fun divideAndScaleRates(rateReceive: BigDecimal, rateSell: BigDecimal): BigDecimal {

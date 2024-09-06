@@ -60,9 +60,8 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="@dimen/standard_margin"
             android:text="@string/receive"
-            app:layout_constraintBottom_toBottomOf="@id/exchange_receive_input"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/exchange_receive_input" />
+            app:layout_constraintBaseline_toBaselineOf="@id/exchange_receive_input"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
             android:id="@+id/exchange_receive_input"
@@ -82,9 +81,30 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/standard_margin"
             android:layout_marginEnd="@dimen/standard_margin"
-            app:layout_constraintBottom_toBottomOf="@+id/exchange_receive_input"
+            app:layout_constraintBaseline_toBaselineOf="@id/exchange_receive_input"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/exchange_fee_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/standard_margin"
+            android:layout_marginTop="20dp"
+            android:text="@string/fee"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/exchange_receive_input" />
+
+        <TextView
+            android:id="@+id/exchange_fee_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/standard_margin"
+            android:textSize="14sp"
+            app:layout_constraintBaseline_toBaselineOf="@+id/exchange_fee_title"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/exchange_receive_input" />
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toEndOf="@+id/exchange_fee_title"
+            tools:text="0" />
 
         <Button
             android:id="@+id/exchange_confirm_btn"
@@ -94,7 +114,7 @@
             android:layout_marginTop="24dp"
             android:text="@string/submit"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/exchange_receive_title" />
+            app:layout_constraintTop_toBottomOf="@+id/exchange_fee_title" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/exchange_accounts_recycler"

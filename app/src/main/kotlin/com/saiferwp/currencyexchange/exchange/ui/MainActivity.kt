@@ -1,10 +1,12 @@
 package com.saiferwp.currencyexchange.exchange.ui
 
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -81,6 +83,7 @@ class MainActivity : AppCompatActivity() {
         mainBinding.exchangeConfirmBtn.setOnClickListener {
             exchangeViewModel.sendEvent(ExchangeEvent.SubmitExchange)
             mainBinding.exchangeSellInput.text?.clear()
+            showSuccessDialog()
         }
 
         with(mainBinding.exchangeAccountsRecycler) {
@@ -105,6 +108,7 @@ class MainActivity : AppCompatActivity() {
                 mainBinding.exchangeReceiveInput.text =
                     String.format(Locale.getDefault(), "%.2f", state.receiveAmount)
 
+                mainBinding.exchangeFeeValue.text = state.exchangeFee
             }
         }
     }
@@ -147,5 +151,16 @@ class MainActivity : AppCompatActivity() {
             state.availableCurrenciesForReceive.indexOf(state.selectedCurrencyForReceive)
         )
         mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener = listener2
+    }
+
+    private fun showSuccessDialog() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(R.string.success_alert_title)
+        builder.setMessage("You have converted 100.00 EUR to 110.00 USD. Commission Fee - 0.70 EUR.")
+        builder.setPositiveButton(R.string.button_done) { dialog: DialogInterface, _: Int ->
+            dialog.dismiss()
+        }
+        val dialog = builder.create()
+        dialog.show()
     }
 }

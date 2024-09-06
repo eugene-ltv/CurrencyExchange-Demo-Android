@@ -4,4 +4,8 @@
     <string name="sell">Sell</string>
     <string name="receive">Receive</string>
     <string name="submit">Submit</string>
+    <string name="fee_not_applicable">FREE</string>
+    <string name="fee">Conversion fee</string>
+    <string name="success_alert_title">Currency converted</string>
+    <string name="button_done">Done</string>
 </resources>

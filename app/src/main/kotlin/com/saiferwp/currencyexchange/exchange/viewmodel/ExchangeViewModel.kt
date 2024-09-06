@@ -4,6 +4,8 @@ import androidx.lifecycle.viewModelScope
 import com.saiferwp.currencyexchange.common.BaseViewModel
 import com.saiferwp.currencyexchange.common.ViewEvent
 import com.saiferwp.currencyexchange.common.ViewState
+import com.saiferwp.currencyexchange.exchange.data.FeesRepository
+import com.saiferwp.currencyexchange.exchange.model.ExchangeFeeRule
 import com.saiferwp.currencyexchange.exchange.usecase.CurrenciesResult
 import com.saiferwp.currencyexchange.exchange.usecase.FetchCurrenciesUseCase
 import com.saiferwp.currencyexchange.utils.divideAndScaleRates
@@ -14,10 +16,9 @@ import kotlinx.coroutines.flow.onStart
 import java.math.BigDecimal
 
 internal class ExchangeViewModel(
-    private val fetchCurrenciesUseCase: FetchCurrenciesUseCase
+    private val fetchCurrenciesUseCase: FetchCurrenciesUseCase,
+    private val feesRepository: FeesRepository
 ) : BaseViewModel<ExchangeUiState, ExchangeEvent>() {
-
-    private var numberOfSuccessfulExchanges = 0
 
     override fun setInitialState() = ExchangeUiState(
         isLoading = false,
@@ -37,7 +38,6 @@ internal class ExchangeViewModel(
         when (event) {
             ExchangeEvent.FetchRates -> requestRates()
             is ExchangeEvent.SellInputChanged -> {
-
                 setState {
                     copy(
                         sellAmount =
@@ -98,7 +98,13 @@ internal class ExchangeViewModel(
                                 isLoading = false,
                                 baseCurrency = result.baseCurrency,
                                 rates = result.rates,
-                                availableCurrenciesForReceive = availableCurrenciesForReceive
+                                availableCurrenciesForReceive = availableCurrenciesForReceive,
+                                exchangeFee = feesRepository.getStringRepresentation(
+                                    ExchangeFeeRule.Params(
+                                        baseCurrency = result.baseCurrency,
+                                        amount = viewState.value.sellAmount
+                                    )
+                                )
                             )
                         }
                     }
@@ -113,11 +119,16 @@ internal class ExchangeViewModel(
         val receiveAmount = calculateReceiveAmount()
 
         // todo make checks before exchange
-        // show commission
         // enable/disable button
         setState {
             copy(
-                receiveAmount = receiveAmount
+                receiveAmount = receiveAmount,
+                exchangeFee = feesRepository.getStringRepresentation(
+                    ExchangeFeeRule.Params(
+                        baseCurrency = viewState.value.selectedCurrencyForSell,
+                        amount = viewState.value.sellAmount
+                    )
+                )
             )
         }
     }
@@ -146,7 +157,12 @@ internal class ExchangeViewModel(
         val mutableAccounts = viewState.value.accounts.toMutableMap()
 
         viewState.value.accounts[viewState.value.selectedCurrencyForSell]?.let {
-            val fee = BigDecimal.ZERO
+            val fee = feesRepository.applyFee(
+                ExchangeFeeRule.Params(
+                    baseCurrency = viewState.value.selectedCurrencyForSell,
+                    amount = viewState.value.sellAmount
+                )
+            )
             val newBalance = it.minus(viewState.value.sellAmount).minus(fee)
 
             if (newBalance < BigDecimal.ZERO) {
@@ -158,6 +174,8 @@ internal class ExchangeViewModel(
                 mutableAccounts[viewState.value.selectedCurrencyForReceive]?.plus(receiveAmount)
                     ?: receiveAmount
         }
+
+        feesRepository.markSuccessfulExchange()
 
         setState {
             copy(
@@ -178,7 +196,8 @@ internal data class ExchangeUiState(
     val selectedCurrencyForSell: String,
     val selectedCurrencyForReceive: String,
     val sellAmount: BigDecimal,
-    val receiveAmount: BigDecimal
+    val receiveAmount: BigDecimal,
+    val exchangeFee: String = ""
 ) : ViewState
 
 internal sealed class ExchangeEvent : ViewEvent {
