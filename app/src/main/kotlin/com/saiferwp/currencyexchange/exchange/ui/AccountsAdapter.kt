@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.saiferwp.currencyexchange.DECIMAL_PLACES_FOR_ROUNDING
 import com.saiferwp.currencyexchange.R
 import java.math.BigDecimal
 import java.util.Locale
@@ -30,7 +31,7 @@ internal class AccountsAdapter :
         holder.textView.text = item.key
         holder.numberView.text = String.format(
             Locale.getDefault(),
-            "%.2f",
+            "%.${DECIMAL_PLACES_FOR_ROUNDING}f",
             item.value
         )
     }

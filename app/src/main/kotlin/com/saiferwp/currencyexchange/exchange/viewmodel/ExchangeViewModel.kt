@@ -33,7 +33,9 @@ internal class ExchangeViewModel(
         sellAmount = BigDecimal.ZERO,
         receiveAmount = BigDecimal.ZERO,
         exchangeFee = BigDecimal.ZERO,
-        exchangeRate = BigDecimal.ZERO
+        exchangeRate = BigDecimal.ZERO,
+        buttonSubmitEnabled = false,
+        showInsufficientBalance = false
     )
 
     override fun handleEvents(event: ExchangeEvent) {
@@ -122,8 +124,31 @@ internal class ExchangeViewModel(
     private fun updateReceiveValues() {
         val receiveAmount = calculateReceiveAmount()
 
-        // todo make checks before exchange
-        // enable/disable button
+        val availableBalance = viewState.value.accounts[viewState.value.selectedCurrencyForSell]
+        var showInsufficientBalance = false
+        val buttonSubmitEnabled: Boolean
+
+        if (viewState.value.sellAmount > BigDecimal.ZERO
+            && availableBalance != null
+        ) {
+            val fee = feesRepository.calculateFee(
+                ExchangeFeeRule.Params(
+                    baseCurrency = viewState.value.selectedCurrencyForSell,
+                    amount = viewState.value.sellAmount
+                )
+            )
+            val newBalance = availableBalance.minus(viewState.value.sellAmount).minus(fee)
+
+            buttonSubmitEnabled = if (newBalance >= BigDecimal.ZERO) {
+                true
+            } else {
+                showInsufficientBalance = true
+                false
+            }
+        } else {
+            buttonSubmitEnabled = false
+        }
+
         setState {
             copy(
                 receiveAmount = receiveAmount,
@@ -133,7 +158,9 @@ internal class ExchangeViewModel(
                         amount = viewState.value.sellAmount
                     )
                 ),
-                exchangeRate = calculateReceiveRate()
+                exchangeRate = calculateReceiveRate(),
+                buttonSubmitEnabled = buttonSubmitEnabled,
+                showInsufficientBalance = showInsufficientBalance
             )
         }
     }
@@ -202,7 +229,9 @@ internal data class ExchangeUiState(
     val sellAmount: BigDecimal,
     val receiveAmount: BigDecimal,
     val exchangeFee: BigDecimal,
-    val exchangeRate: BigDecimal
+    val exchangeRate: BigDecimal,
+    val buttonSubmitEnabled: Boolean,
+    val showInsufficientBalance: Boolean
 ) : ViewState
 
 internal sealed class ExchangeEvent : ViewEvent {

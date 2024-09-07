@@ -12,6 +12,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.saiferwp.currencyexchange.DECIMAL_PLACES_FOR_ROUNDING
 import com.saiferwp.currencyexchange.R
 import com.saiferwp.currencyexchange.databinding.ActivityMainBinding
 import com.saiferwp.currencyexchange.exchange.viewmodel.ExchangeEvent
@@ -108,7 +109,10 @@ class MainActivity : AppCompatActivity() {
                 accountsAdapter.setDataSource(state.accounts)
 
                 mainBinding.exchangeReceiveInput.text =
-                    String.format(Locale.getDefault(), "%.2f", state.receiveAmount)
+                    String.format(Locale.getDefault(),
+                        "%.${DECIMAL_PLACES_FOR_ROUNDING}f",
+                        state.receiveAmount
+                    )
 
                 if (state.sellAmount > BigDecimal.ZERO) {
                     mainBinding.exchangeFeeGroup.visibility = View.VISIBLE
@@ -118,7 +122,8 @@ class MainActivity : AppCompatActivity() {
                 mainBinding.exchangeFeeValue.text =
                     if (state.exchangeFee > BigDecimal.ZERO) {
                         String.format(
-                            Locale.getDefault(), "%.2f " + state.baseCurrency,
+                            Locale.getDefault(),
+                            "%f " + state.selectedCurrencyForSell,
                             state.exchangeFee
                         )
                     } else {
@@ -174,7 +179,7 @@ class MainActivity : AppCompatActivity() {
         val message = getString(R.string.conversion_result_message,
             "${state.sellAmount} ${state.selectedCurrencyForSell}",
             "${state.receiveAmount} ${state.selectedCurrencyForReceive}",
-            "${state.exchangeFee} ${state.baseCurrency}")
+            "${state.exchangeFee} ${state.selectedCurrencyForSell}")
 
         val builder = AlertDialog.Builder(this)
         builder.setTitle(R.string.success_alert_title)

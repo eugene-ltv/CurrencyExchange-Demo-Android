@@ -16,7 +16,7 @@ interface ExchangeFeeRule {
 
 internal class FromSixthExchangeIs0dot7PercentFeeRule : ExchangeFeeRule {
 
-    private val feePercent = BigDecimal(0.007)
+    private val feePercent = BigDecimal("0.007")
     private val maxNumberOfFreeExchanges = 5
 
     override fun applyFee(params: ExchangeFeeRule.Params, numberOfSuccessfulExchanges: Int): BigDecimal {
