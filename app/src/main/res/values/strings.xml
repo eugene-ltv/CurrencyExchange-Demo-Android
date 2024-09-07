@@ -11,4 +11,5 @@
     <string name="conversion_result_message">You have converted %1$s to %2$s. Commission Fee - %3$s.</string>
     <string name="conversion_rate_label">Buy rate</string>
     <string name="conversion_rate_value">%1$s 1 = %2$s</string>
+    <string name="insufficient_balance">Insufficient funds</string>
 </resources>

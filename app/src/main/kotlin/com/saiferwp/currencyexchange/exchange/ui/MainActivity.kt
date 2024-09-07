@@ -114,6 +114,12 @@ class MainActivity : AppCompatActivity() {
                         state.receiveAmount
                     )
 
+                mainBinding.exchangeInsufficientBalanceError.visibility = if (state.showInsufficientBalance) {
+                    View.VISIBLE
+                } else {
+                    View.GONE
+                }
+
                 if (state.sellAmount > BigDecimal.ZERO) {
                     mainBinding.exchangeFeeGroup.visibility = View.VISIBLE
                 } else {
@@ -135,6 +141,8 @@ class MainActivity : AppCompatActivity() {
                         state.selectedCurrencyForSell,
                         "${state.selectedCurrencyForReceive} ${state.exchangeRate}"
                     )
+
+                mainBinding.exchangeConfirmBtn.isEnabled = state.buttonSubmitEnabled
             }
         }
     }
