@@ -104,7 +104,8 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 setupSelectors(state)
-                setupAccountsRecycler(state)
+
+                accountsAdapter.setDataSource(state.accounts)
 
                 mainBinding.exchangeReceiveInput.text =
                     String.format(Locale.getDefault(), "%.2f", state.receiveAmount)
@@ -123,12 +124,14 @@ class MainActivity : AppCompatActivity() {
                     } else {
                         getString(R.string.fee_not_applicable)
                     }
+
+                mainBinding.exchangeConversionRateValue.text =
+                    getString(R.string.conversion_rate_value,
+                        state.selectedCurrencyForSell,
+                        "${state.selectedCurrencyForReceive} ${state.exchangeRate}"
+                    )
             }
         }
-    }
-
-    private fun setupAccountsRecycler(state: ExchangeUiState) {
-        accountsAdapter.setDataSource(state.accounts)
     }
 
     private fun showLoading() {

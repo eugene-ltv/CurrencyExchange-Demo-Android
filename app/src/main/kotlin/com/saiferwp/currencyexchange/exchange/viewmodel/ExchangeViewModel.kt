@@ -32,7 +32,8 @@ internal class ExchangeViewModel(
         selectedCurrencyForReceive = "EUR",
         sellAmount = BigDecimal.ZERO,
         receiveAmount = BigDecimal.ZERO,
-        exchangeFee = BigDecimal.ZERO
+        exchangeFee = BigDecimal.ZERO,
+        exchangeRate = BigDecimal.ZERO
     )
 
     override fun handleEvents(event: ExchangeEvent) {
@@ -49,27 +50,29 @@ internal class ExchangeViewModel(
                         }
                     )
                 }
-                updateReceiveValue()
+                updateReceiveValues()
             }
 
             is ExchangeEvent.SellCurrencySelected -> {
+                val selectedCurrencyForSell = viewState.value.accounts.keys.toList()[event.id]
                 setState {
                     copy(
                         availableCurrenciesForReceive = rates.keys.minus(
                             selectedCurrencyForSell
                         ).toList(),
-                        selectedCurrencyForSell = accounts.keys.toList()[event.id]
+                        selectedCurrencyForSell = selectedCurrencyForSell,
                     )
                 }
+                updateReceiveValues()
             }
 
             is ExchangeEvent.ReceiveCurrencySelected -> {
                 setState {
                     copy(
-                        selectedCurrencyForReceive = availableCurrenciesForReceive[event.id]
+                        selectedCurrencyForReceive = availableCurrenciesForReceive[event.id],
                     )
                 }
-                updateReceiveValue()
+                updateReceiveValues()
             }
 
             ExchangeEvent.SubmitExchange -> doExchange()
@@ -116,7 +119,7 @@ internal class ExchangeViewModel(
             .launchIn(viewModelScope)
     }
 
-    private fun updateReceiveValue() {
+    private fun updateReceiveValues() {
         val receiveAmount = calculateReceiveAmount()
 
         // todo make checks before exchange
@@ -129,28 +132,28 @@ internal class ExchangeViewModel(
                         baseCurrency = viewState.value.selectedCurrencyForSell,
                         amount = viewState.value.sellAmount
                     )
-                )
+                ),
+                exchangeRate = calculateReceiveRate()
             )
         }
     }
 
-    private fun calculateReceiveAmount(): BigDecimal {
+    private fun calculateReceiveRate(): BigDecimal {
         val state = viewState.value
 
         return if (state.selectedCurrencyForSell == state.baseCurrency) {
-            val exchangeRate =
                 state.rates[state.selectedCurrencyForReceive] ?: return BigDecimal.ZERO
-            multiplyAndScaleToCents(state.sellAmount, exchangeRate)
         } else {
             val sellExchangeRate = state.rates[state.selectedCurrencyForSell] ?: BigDecimal.ZERO
             val receiveExchangeRate =
                 state.rates[state.selectedCurrencyForReceive] ?: BigDecimal.ZERO
 
-            multiplyAndScaleToCents(
-                state.sellAmount,
-                divideAndScaleRates(receiveExchangeRate, sellExchangeRate)
-            )
+            divideAndScaleRates(receiveExchangeRate, sellExchangeRate)
         }
+    }
+
+    private fun calculateReceiveAmount(): BigDecimal {
+        return multiplyAndScaleToCents(viewState.value.sellAmount, calculateReceiveRate())
     }
 
     private fun doExchange() {
@@ -198,7 +201,8 @@ internal data class ExchangeUiState(
     val selectedCurrencyForReceive: String,
     val sellAmount: BigDecimal,
     val receiveAmount: BigDecimal,
-    val exchangeFee: BigDecimal
+    val exchangeFee: BigDecimal,
+    val exchangeRate: BigDecimal
 ) : ViewState
 
 internal sealed class ExchangeEvent : ViewEvent {

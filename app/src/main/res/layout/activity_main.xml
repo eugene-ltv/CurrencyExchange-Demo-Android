@@ -84,15 +84,38 @@
             app:layout_constraintBaseline_toBaselineOf="@id/exchange_receive_input"
             app:layout_constraintEnd_toEndOf="parent" />
 
+
+        <TextView
+            android:id="@+id/exchange_conversion_rate_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/standard_margin"
+            android:layout_marginTop="20dp"
+            android:text="@string/conversion_rate_label"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/exchange_receive_input" />
+
+        <TextView
+            android:id="@+id/exchange_conversion_rate_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/standard_margin"
+            android:textSize="14sp"
+            app:layout_constraintBaseline_toBaselineOf="@+id/exchange_conversion_rate_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toEndOf="@+id/exchange_conversion_rate_title"
+            tools:text="0" />
+
         <TextView
             android:id="@+id/exchange_fee_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="@dimen/standard_margin"
             android:layout_marginTop="20dp"
-            android:text="@string/fee"
+            android:text="@string/fee_label"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/exchange_receive_input" />
+            app:layout_constraintTop_toBottomOf="@+id/exchange_conversion_rate_title" />
 
         <TextView
             android:id="@+id/exchange_fee_value"
