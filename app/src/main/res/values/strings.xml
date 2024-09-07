@@ -2,8 +2,6 @@
     <string name="app_name">Currency exchange</string>
     <string name="balances_title">My balances</string>
     <string name="exchange_title">Currency exchange</string>
-    <string name="sell">Sell</string>
-    <string name="receive">Receive</string>
     <string name="submit">Submit</string>
     <string name="fee_not_applicable">FREE</string>
     <string name="fee_label">Conversion fee</string>

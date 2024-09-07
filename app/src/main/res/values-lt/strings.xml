@@ -1,0 +1,18 @@
+<!-- translated by Gemini -->
+<resources>
+    <string name="app_name">Valiutų keitykla</string>
+    <string name="balances_title">Mano balansai</string>
+    <string name="exchange_title">Valiutų keitimas</string>
+    <string name="submit">Pateikti</string>
+    <string name="fee_not_applicable">NEMOKAMAI</string>
+    <string name="fee_label">Konvertavimo mokestis</string>
+    <string name="success_alert_title">Valiuta konvertuota</string>
+    <string name="button_done">Atlikta</string>
+    <string name="conversion_result_message_with_fee">Jūs konvertavote %1$s į %2$s. Komisinis mokestis - %3$s.</string>
+    <string name="conversion_result_message">Jūs konvertavote %1$s į %2$s.</string>
+    <string name="conversion_rate_label">Pirkimo kursas</string>
+    <string name="conversion_rate_value">%1$s 1 = %2$s</string>
+    <string name="insufficient_balance">Nepakanka lėšų</string>
+    <string name="api_connection_error">Nepavyko įkelti valiutų kursų.</string>
+    <string name="balance_value">Balansas: %1$s %2$s</string>
+</resources>
