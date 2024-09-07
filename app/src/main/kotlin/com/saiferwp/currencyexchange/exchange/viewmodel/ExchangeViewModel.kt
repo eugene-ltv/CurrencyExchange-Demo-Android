@@ -31,7 +31,8 @@ internal class ExchangeViewModel(
         selectedCurrencyForSell = "EUR",
         selectedCurrencyForReceive = "EUR",
         sellAmount = BigDecimal.ZERO,
-        receiveAmount = BigDecimal.ZERO
+        receiveAmount = BigDecimal.ZERO,
+        exchangeFee = BigDecimal.ZERO
     )
 
     override fun handleEvents(event: ExchangeEvent) {
@@ -99,7 +100,7 @@ internal class ExchangeViewModel(
                                 baseCurrency = result.baseCurrency,
                                 rates = result.rates,
                                 availableCurrenciesForReceive = availableCurrenciesForReceive,
-                                exchangeFee = feesRepository.getStringRepresentation(
+                                exchangeFee = feesRepository.calculateFee(
                                     ExchangeFeeRule.Params(
                                         baseCurrency = result.baseCurrency,
                                         amount = viewState.value.sellAmount
@@ -123,7 +124,7 @@ internal class ExchangeViewModel(
         setState {
             copy(
                 receiveAmount = receiveAmount,
-                exchangeFee = feesRepository.getStringRepresentation(
+                exchangeFee = feesRepository.calculateFee(
                     ExchangeFeeRule.Params(
                         baseCurrency = viewState.value.selectedCurrencyForSell,
                         amount = viewState.value.sellAmount
@@ -157,7 +158,7 @@ internal class ExchangeViewModel(
         val mutableAccounts = viewState.value.accounts.toMutableMap()
 
         viewState.value.accounts[viewState.value.selectedCurrencyForSell]?.let {
-            val fee = feesRepository.applyFee(
+            val fee = feesRepository.calculateFee(
                 ExchangeFeeRule.Params(
                     baseCurrency = viewState.value.selectedCurrencyForSell,
                     amount = viewState.value.sellAmount
@@ -197,7 +198,7 @@ internal data class ExchangeUiState(
     val selectedCurrencyForReceive: String,
     val sellAmount: BigDecimal,
     val receiveAmount: BigDecimal,
-    val exchangeFee: String = ""
+    val exchangeFee: BigDecimal
 ) : ViewState
 
 internal sealed class ExchangeEvent : ViewEvent {

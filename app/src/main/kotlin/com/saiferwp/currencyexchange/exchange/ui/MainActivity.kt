@@ -21,6 +21,7 @@ import com.saiferwp.currencyexchange.utils.MoneyAmountInputFilter
 import com.saiferwp.currencyexchange.utils.launchAndRepeatOnLifecycleStarted
 import com.saiferwp.currencyexchange.utils.viewBinding
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.math.BigDecimal
 import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
@@ -81,9 +82,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         mainBinding.exchangeConfirmBtn.setOnClickListener {
+            showSuccessDialog(state = exchangeViewModel.viewState.value)
             exchangeViewModel.sendEvent(ExchangeEvent.SubmitExchange)
             mainBinding.exchangeSellInput.text?.clear()
-            showSuccessDialog()
         }
 
         with(mainBinding.exchangeAccountsRecycler) {
@@ -108,7 +109,20 @@ class MainActivity : AppCompatActivity() {
                 mainBinding.exchangeReceiveInput.text =
                     String.format(Locale.getDefault(), "%.2f", state.receiveAmount)
 
-                mainBinding.exchangeFeeValue.text = state.exchangeFee
+                if (state.sellAmount > BigDecimal.ZERO) {
+                    mainBinding.exchangeFeeGroup.visibility = View.VISIBLE
+                } else {
+                    mainBinding.exchangeFeeGroup.visibility = View.GONE
+                }
+                mainBinding.exchangeFeeValue.text =
+                    if (state.exchangeFee > BigDecimal.ZERO) {
+                        String.format(
+                            Locale.getDefault(), "%.2f " + state.baseCurrency,
+                            state.exchangeFee
+                        )
+                    } else {
+                        getString(R.string.fee_not_applicable)
+                    }
             }
         }
     }
@@ -153,10 +167,15 @@ class MainActivity : AppCompatActivity() {
         mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener = listener2
     }
 
-    private fun showSuccessDialog() {
+    private fun showSuccessDialog(state: ExchangeUiState) {
+        val message = getString(R.string.conversion_result_message,
+            "${state.sellAmount} ${state.selectedCurrencyForSell}",
+            "${state.receiveAmount} ${state.selectedCurrencyForReceive}",
+            "${state.exchangeFee} ${state.baseCurrency}")
+
         val builder = AlertDialog.Builder(this)
         builder.setTitle(R.string.success_alert_title)
-        builder.setMessage("You have converted 100.00 EUR to 110.00 USD. Commission Fee - 0.70 EUR.")
+        builder.setMessage(message)
         builder.setPositiveButton(R.string.button_done) { dialog: DialogInterface, _: Int ->
             dialog.dismiss()
         }

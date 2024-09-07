@@ -106,6 +106,12 @@
             app:layout_constraintStart_toEndOf="@+id/exchange_fee_title"
             tools:text="0" />
 
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/exchange_fee_group"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:constraint_referenced_ids="exchange_fee_title,exchange_fee_value"/>
+
         <Button
             android:id="@+id/exchange_confirm_btn"
             android:layout_width="wrap_content"

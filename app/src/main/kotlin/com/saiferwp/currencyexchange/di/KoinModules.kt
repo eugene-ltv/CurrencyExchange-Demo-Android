@@ -25,5 +25,5 @@ val appModule = module {
         fetchCurrenciesUseCase = get(),
         feesRepository = get()
     ) }
-    single { FeesRepository(context = get()) }
+    single { FeesRepository() }
 }
