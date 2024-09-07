@@ -168,7 +168,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupSelectors(state: ExchangeUiState) {
-        val listener = mainBinding.exchangeSellCurrencySelector.onItemSelectedListener
+        val sellSelectorListener = mainBinding.exchangeSellCurrencySelector.onItemSelectedListener
         mainBinding.exchangeSellCurrencySelector.onItemSelectedListener = null
         mainBinding.exchangeSellCurrencySelector.adapter = ArrayAdapter(
             this,
@@ -178,9 +178,9 @@ class MainActivity : AppCompatActivity() {
         mainBinding.exchangeSellCurrencySelector.setSelection(
             state.accounts.keys.toList().indexOf(state.selectedCurrencyForSell)
         )
-        mainBinding.exchangeSellCurrencySelector.onItemSelectedListener = listener
+        mainBinding.exchangeSellCurrencySelector.onItemSelectedListener = sellSelectorListener
 
-        val listener2 = mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener
+        val receiveSelectorListener = mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener
         mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener = null
         mainBinding.exchangeReceiveCurrencySelector.adapter = ArrayAdapter(
             this,
@@ -190,14 +190,24 @@ class MainActivity : AppCompatActivity() {
         mainBinding.exchangeReceiveCurrencySelector.setSelection(
             state.availableCurrenciesForReceive.indexOf(state.selectedCurrencyForReceive)
         )
-        mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener = listener2
+        mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener = receiveSelectorListener
     }
 
     private fun showSuccessDialog(state: ExchangeUiState) {
-        val message = getString(R.string.conversion_result_message,
-            "${state.sellAmount} ${state.selectedCurrencyForSell}",
-            "${state.receiveAmount} ${state.selectedCurrencyForReceive}",
-            "${state.exchangeFee} ${state.selectedCurrencyForSell}")
+        val message = if (state.exchangeFee > BigDecimal.ZERO) {
+            getString(
+                R.string.conversion_result_message_with_fee,
+                "${state.sellAmount} ${state.selectedCurrencyForSell}",
+                "${state.receiveAmount} ${state.selectedCurrencyForReceive}",
+                "${state.exchangeFee} ${state.selectedCurrencyForSell}"
+            )
+        } else {
+            getString(
+                R.string.conversion_result_message,
+                "${state.sellAmount} ${state.selectedCurrencyForSell}",
+                "${state.receiveAmount} ${state.selectedCurrencyForReceive}"
+            )
+        }
 
         val builder = AlertDialog.Builder(this)
         builder.setTitle(R.string.success_alert_title)
