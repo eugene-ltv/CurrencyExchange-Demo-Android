@@ -7,9 +7,14 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import java.util.concurrent.TimeUnit
+
+private const val API_REQUEST_TIME_OUT_SECONDS = 10L
 
 private val okHttpClient = OkHttpClient().newBuilder()
     .addInterceptor(createLoggingInterceptor())
+    .connectTimeout(API_REQUEST_TIME_OUT_SECONDS, TimeUnit.SECONDS)
+    .readTimeout(API_REQUEST_TIME_OUT_SECONDS, TimeUnit.SECONDS)
     .build()
 
 internal fun buildRemoteApiService(

@@ -2,8 +2,11 @@ package com.saiferwp.currencyexchange.exchange.usecase
 
 import com.saiferwp.currencyexchange.api.Api
 import com.saiferwp.currencyexchange.common.FlowUseCase
+import com.saiferwp.currencyexchange.exchange.model.CurrencyRates
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import retrofit2.Response
+import java.io.IOException
 import java.math.BigDecimal
 
 internal class FetchCurrenciesUseCase(
@@ -11,7 +14,13 @@ internal class FetchCurrenciesUseCase(
 ) : FlowUseCase<Unit, CurrenciesResult>() {
 
     override fun execute(parameters: Unit): Flow<CurrenciesResult> = flow {
-        val response = api.getRates()
+        val response: Response<CurrencyRates>
+        try {
+            response = api.getRates()
+        } catch (ex: IOException) {
+            emit(CurrenciesResult.Failed)
+            return@flow
+        }
         val responseBody = response.body()
         val result = if (response.isSuccessful && responseBody != null) {
             CurrenciesResult.Success(

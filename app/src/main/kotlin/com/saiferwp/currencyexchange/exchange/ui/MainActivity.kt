@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.saiferwp.currencyexchange.DECIMAL_PLACES_FOR_ROUNDING
 import com.saiferwp.currencyexchange.R
 import com.saiferwp.currencyexchange.databinding.ActivityMainBinding
+import com.saiferwp.currencyexchange.exchange.viewmodel.ExchangeEffect
 import com.saiferwp.currencyexchange.exchange.viewmodel.ExchangeEvent
 import com.saiferwp.currencyexchange.exchange.viewmodel.ExchangeUiState
 import com.saiferwp.currencyexchange.exchange.viewmodel.ExchangeViewModel
@@ -145,6 +147,14 @@ class MainActivity : AppCompatActivity() {
                 mainBinding.exchangeConfirmBtn.isEnabled = state.buttonSubmitEnabled
             }
         }
+
+        launchAndRepeatOnLifecycleStarted {
+            exchangeViewModel.effect.collect { effect->
+                when (effect) {
+                    ExchangeEffect.ApiFetchFailed -> showConnectionAlert()
+                }
+            }
+        }
     }
 
     private fun showLoading() {
@@ -197,5 +207,9 @@ class MainActivity : AppCompatActivity() {
         }
         val dialog = builder.create()
         dialog.show()
+    }
+
+    private fun showConnectionAlert() {
+        Toast.makeText(this, R.string.api_connection_error, Toast.LENGTH_SHORT).show()
     }
 }

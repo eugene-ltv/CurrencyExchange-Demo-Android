@@ -12,4 +12,5 @@
     <string name="conversion_rate_label">Buy rate</string>
     <string name="conversion_rate_value">%1$s 1 = %2$s</string>
     <string name="insufficient_balance">Insufficient funds</string>
+    <string name="api_connection_error">Currencies rates loading failed.</string>
 </resources>

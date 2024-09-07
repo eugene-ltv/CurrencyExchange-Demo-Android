@@ -1,8 +1,10 @@
 package com.saiferwp.currencyexchange.exchange.viewmodel
 
+import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.viewModelScope
 import com.saiferwp.currencyexchange.common.BaseViewModel
 import com.saiferwp.currencyexchange.common.ViewEvent
+import com.saiferwp.currencyexchange.common.ViewSideEffect
 import com.saiferwp.currencyexchange.common.ViewState
 import com.saiferwp.currencyexchange.exchange.data.FeesRepository
 import com.saiferwp.currencyexchange.exchange.model.ExchangeFeeRule
@@ -10,15 +12,19 @@ import com.saiferwp.currencyexchange.exchange.usecase.CurrenciesResult
 import com.saiferwp.currencyexchange.exchange.usecase.FetchCurrenciesUseCase
 import com.saiferwp.currencyexchange.utils.divideAndScaleRates
 import com.saiferwp.currencyexchange.utils.multiplyAndScaleToCents
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.launch
 import java.math.BigDecimal
+
+private const val FETCH_RATES_DELAY = 5 * 1000L // 5 seconds
 
 internal class ExchangeViewModel(
     private val fetchCurrenciesUseCase: FetchCurrenciesUseCase,
     private val feesRepository: FeesRepository
-) : BaseViewModel<ExchangeUiState, ExchangeEvent>() {
+) : BaseViewModel<ExchangeUiState, ExchangeEvent, ExchangeEffect>(), DefaultLifecycleObserver {
 
     override fun setInitialState() = ExchangeUiState(
         isLoading = false,
@@ -41,6 +47,7 @@ internal class ExchangeViewModel(
     override fun handleEvents(event: ExchangeEvent) {
         when (event) {
             ExchangeEvent.FetchRates -> requestRates()
+            ExchangeEvent.ReFetchRates -> refreshRates()
             is ExchangeEvent.SellInputChanged -> {
                 setState {
                     copy(
@@ -113,9 +120,39 @@ internal class ExchangeViewModel(
                                 )
                             )
                         }
+
+                        startRatesRefreshTimer()
                     }
 
-                    CurrenciesResult.Failed -> TODO()
+                    CurrenciesResult.Failed -> {
+                        setEffect { ExchangeEffect.ApiFetchFailed }
+                    }
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun refreshRates() {
+        fetchCurrenciesUseCase.invoke(Unit)
+            .onEach { result ->
+                when (result) {
+                    is CurrenciesResult.Success -> {
+                        setState {
+                            copy(
+                                baseCurrency = result.baseCurrency,
+                                rates = result.rates
+                            )
+                        }
+                        setState {
+                            copy(
+                                exchangeRate = calculateReceiveRate()
+                            )
+                        }
+                    }
+
+                    CurrenciesResult.Failed -> {
+                        setEffect { ExchangeEffect.ApiFetchFailed }
+                    }
                 }
             }
             .launchIn(viewModelScope)
@@ -216,6 +253,14 @@ internal class ExchangeViewModel(
             )
         }
     }
+
+    private fun startRatesRefreshTimer() {
+        viewModelScope.launch {
+            delay(FETCH_RATES_DELAY)
+            handleEvents(ExchangeEvent.ReFetchRates)
+            startRatesRefreshTimer()
+        }
+    }
 }
 
 internal data class ExchangeUiState(
@@ -236,9 +281,14 @@ internal data class ExchangeUiState(
 
 internal sealed class ExchangeEvent : ViewEvent {
     internal data object FetchRates : ExchangeEvent()
+    internal data object ReFetchRates : ExchangeEvent()
     internal data class SellInputChanged(val input: String) : ExchangeEvent()
     internal data class SellCurrencySelected(val id: Int) : ExchangeEvent()
     internal data class ReceiveCurrencySelected(val id: Int) : ExchangeEvent()
     internal data object SubmitExchange : ExchangeEvent()
+}
+
+internal sealed class ExchangeEffect : ViewSideEffect {
+    internal data object ApiFetchFailed : ExchangeEffect()
 }
 

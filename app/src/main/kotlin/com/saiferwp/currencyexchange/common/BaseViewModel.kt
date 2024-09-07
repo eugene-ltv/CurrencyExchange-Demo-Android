@@ -2,16 +2,19 @@ package com.saiferwp.currencyexchange.common
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 internal interface ViewState
 internal interface ViewEvent
+internal interface ViewSideEffect
 
-internal abstract class BaseViewModel<UiState : ViewState, Event : ViewEvent> : ViewModel() {
+internal abstract class BaseViewModel<UiState : ViewState, Event : ViewEvent, Effect : ViewSideEffect> : ViewModel() {
 
     private val initialState: UiState by lazy { setInitialState() }
     abstract fun setInitialState(): UiState
@@ -21,6 +24,9 @@ internal abstract class BaseViewModel<UiState : ViewState, Event : ViewEvent> : 
 
     private val _viewState: MutableStateFlow<UiState> = MutableStateFlow(initialState)
     val viewState: StateFlow<UiState> = _viewState
+
+    private val _effect: Channel<Effect> = Channel()
+    val effect = _effect.receiveAsFlow()
 
     init {
         subscribeToEvents()
@@ -43,5 +49,10 @@ internal abstract class BaseViewModel<UiState : ViewState, Event : ViewEvent> : 
     protected fun setState(reducer: UiState.() -> UiState) {
         val newState = viewState.value.reducer()
         _viewState.value = newState
+    }
+
+    protected fun setEffect(builder: () -> Effect) {
+        val effectValue = builder()
+        viewModelScope.launch { _effect.send(effectValue) }
     }
 }
