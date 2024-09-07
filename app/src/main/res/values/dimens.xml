@@ -1,3 +1,10 @@
 <resources>
-    <dimen name="standard_margin">16dp</dimen>
+    <dimen name="margin_1x">8dp</dimen>
+    <dimen name="margin_2x">16dp</dimen>
+    <dimen name="margin_3x">16dp</dimen>
+    <dimen name="receive_amount_text_size">20sp</dimen>
+    <dimen name="submit_btn_margin">24dp</dimen>
+    <dimen name="card_radius">24dp</dimen>
+    <dimen name="card_elevation">10dp</dimen>
+    <dimen name="above_card_elevation">9dp</dimen>
 </resources>

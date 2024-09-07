@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Currency exchange</string>
-    <string name="title">Currency exchange</string>
+    <string name="balances_title">My balances</string>
+    <string name="exchange_title">Currency exchange</string>
     <string name="sell">Sell</string>
     <string name="receive">Receive</string>
     <string name="submit">Submit</string>
@@ -14,4 +15,5 @@
     <string name="conversion_rate_value">%1$s 1 = %2$s</string>
     <string name="insufficient_balance">Insufficient funds</string>
     <string name="api_connection_error">Currencies rates loading failed.</string>
+    <string name="balance_value">Balance: %1$s %2$s</string>
 </resources>

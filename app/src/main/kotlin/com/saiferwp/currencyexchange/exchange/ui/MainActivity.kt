@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doOnTextChanged
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.saiferwp.currencyexchange.DECIMAL_PLACES_FOR_ROUNDING
 import com.saiferwp.currencyexchange.R
@@ -93,6 +94,9 @@ class MainActivity : AppCompatActivity() {
         with(mainBinding.exchangeAccountsRecycler) {
             layoutManager = LinearLayoutManager(this.context)
             adapter = accountsAdapter
+            val dividerItemDecoration =
+                DividerItemDecoration(this.context, LinearLayoutManager.VERTICAL)
+            addItemDecoration(dividerItemDecoration)
         }
     }
 
@@ -111,22 +115,26 @@ class MainActivity : AppCompatActivity() {
                 accountsAdapter.setDataSource(state.accounts)
 
                 mainBinding.exchangeReceiveInput.text =
-                    String.format(Locale.getDefault(),
-                        "%.${DECIMAL_PLACES_FOR_ROUNDING}f",
+                    String.format(
+                        Locale.getDefault(),
+                        "+%.${DECIMAL_PLACES_FOR_ROUNDING}f",
                         state.receiveAmount
                     )
 
-                mainBinding.exchangeInsufficientBalanceError.visibility = if (state.showInsufficientBalance) {
-                    View.VISIBLE
-                } else {
-                    View.GONE
-                }
+                mainBinding.exchangeSellBalance.text =
+                    getString(
+                        R.string.balance_value,
+                        state.selectedCurrencyForSell,
+                        state.accounts[state.selectedCurrencyForSell]
+                    )
 
-                if (state.sellAmount > BigDecimal.ZERO) {
-                    mainBinding.exchangeFeeGroup.visibility = View.VISIBLE
-                } else {
-                    mainBinding.exchangeFeeGroup.visibility = View.GONE
-                }
+                mainBinding.exchangeInsufficientBalanceError.visibility =
+                    if (state.showInsufficientBalance) {
+                        View.VISIBLE
+                    } else {
+                        View.INVISIBLE
+                    }
+
                 mainBinding.exchangeFeeValue.text =
                     if (state.exchangeFee > BigDecimal.ZERO) {
                         String.format(
@@ -139,7 +147,8 @@ class MainActivity : AppCompatActivity() {
                     }
 
                 mainBinding.exchangeConversionRateValue.text =
-                    getString(R.string.conversion_rate_value,
+                    getString(
+                        R.string.conversion_rate_value,
                         state.selectedCurrencyForSell,
                         "${state.selectedCurrencyForReceive} ${state.exchangeRate}"
                     )
@@ -149,7 +158,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         launchAndRepeatOnLifecycleStarted {
-            exchangeViewModel.effect.collect { effect->
+            exchangeViewModel.effect.collect { effect ->
                 when (effect) {
                     ExchangeEffect.ApiFetchFailed -> showConnectionAlert()
                 }
@@ -180,7 +189,8 @@ class MainActivity : AppCompatActivity() {
         )
         mainBinding.exchangeSellCurrencySelector.onItemSelectedListener = sellSelectorListener
 
-        val receiveSelectorListener = mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener
+        val receiveSelectorListener =
+            mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener
         mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener = null
         mainBinding.exchangeReceiveCurrencySelector.adapter = ArrayAdapter(
             this,

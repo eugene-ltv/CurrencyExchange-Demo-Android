@@ -16,13 +16,13 @@ internal class AccountsAdapter :
     private var accounts: Map<String, BigDecimal> = emptyMap()
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val textView: TextView = itemView.findViewById(R.id.item_text)
-        val numberView: TextView = itemView.findViewById(R.id.item_number)
+        val textView: TextView = itemView.findViewById(R.id.item_currency)
+        val numberView: TextView = itemView.findViewById(R.id.item_amount)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val itemView = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_layout, parent, false)
+            .inflate(R.layout.item_account_layout, parent, false)
         return ViewHolder(itemView)
     }
 
