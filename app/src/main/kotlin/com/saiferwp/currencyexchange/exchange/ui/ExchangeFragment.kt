@@ -6,17 +6,14 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doOnTextChanged
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.saiferwp.currencyexchange.DECIMAL_PLACES_FOR_ROUNDING
 import com.saiferwp.currencyexchange.R
-import com.saiferwp.currencyexchange.databinding.ActivityMainBinding
+import com.saiferwp.currencyexchange.databinding.FragmentExchangeBinding
 import com.saiferwp.currencyexchange.exchange.viewmodel.ExchangeEffect
 import com.saiferwp.currencyexchange.exchange.viewmodel.ExchangeEvent
 import com.saiferwp.currencyexchange.exchange.viewmodel.ExchangeUiState
@@ -28,24 +25,16 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.math.BigDecimal
 import java.util.Locale
 
-class MainActivity : AppCompatActivity() {
+// todo migrate to Compose
+internal class ExchangeFragment: Fragment(R.layout.fragment_exchange) {
 
     private val exchangeViewModel: ExchangeViewModel by viewModel()
 
-    private val mainBinding by viewBinding(ActivityMainBinding::inflate)
+    private val mainBinding by viewBinding(FragmentExchangeBinding::bind)
 
     private val accountsAdapter = AccountsAdapter()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContentView(mainBinding.root)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.exchange_main_layout)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         exchangeViewModel.sendEvent(ExchangeEvent.FetchRates)
 
         subscribeToViewState()
@@ -125,7 +114,11 @@ class MainActivity : AppCompatActivity() {
                     getString(
                         R.string.balance_value,
                         state.selectedCurrencyForSell,
-                        state.accounts[state.selectedCurrencyForSell]
+                        String.format(
+                            Locale.getDefault(),
+                            "%.${DECIMAL_PLACES_FOR_ROUNDING}f",
+                            state.accounts[state.selectedCurrencyForSell]
+                        )
                     )
 
                 mainBinding.exchangeInsufficientBalanceError.visibility =
@@ -180,7 +173,7 @@ class MainActivity : AppCompatActivity() {
         val sellSelectorListener = mainBinding.exchangeSellCurrencySelector.onItemSelectedListener
         mainBinding.exchangeSellCurrencySelector.onItemSelectedListener = null
         mainBinding.exchangeSellCurrencySelector.adapter = ArrayAdapter(
-            this,
+            requireContext(),
             android.R.layout.simple_spinner_item,
             state.accounts.keys.toList()
         ).apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
@@ -193,7 +186,7 @@ class MainActivity : AppCompatActivity() {
             mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener
         mainBinding.exchangeReceiveCurrencySelector.onItemSelectedListener = null
         mainBinding.exchangeReceiveCurrencySelector.adapter = ArrayAdapter(
-            this,
+            requireContext(),
             android.R.layout.simple_spinner_item,
             state.availableCurrenciesForReceive
         ).apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
@@ -219,7 +212,7 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        val builder = AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(requireContext())
         builder.setTitle(R.string.success_alert_title)
         builder.setMessage(message)
         builder.setPositiveButton(R.string.button_done) { dialog: DialogInterface, _: Int ->
@@ -230,6 +223,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showConnectionAlert() {
-        Toast.makeText(this, R.string.api_connection_error, Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), R.string.api_connection_error, Toast.LENGTH_SHORT).show()
     }
 }
