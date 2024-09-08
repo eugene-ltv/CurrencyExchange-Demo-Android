@@ -9,7 +9,7 @@ import com.saiferwp.currencyexchange.common.ViewState
 import com.saiferwp.currencyexchange.exchange.data.FeesRepository
 import com.saiferwp.currencyexchange.exchange.model.ExchangeFeeRule
 import com.saiferwp.currencyexchange.exchange.usecase.CurrenciesResult
-import com.saiferwp.currencyexchange.exchange.usecase.FetchCurrenciesUseCase
+import com.saiferwp.currencyexchange.exchange.usecase.FetchCurrenciesRatesUseCase
 import com.saiferwp.currencyexchange.utils.divideAndScaleRates
 import com.saiferwp.currencyexchange.utils.multiplyAndScaleToCents
 import kotlinx.coroutines.delay
@@ -22,7 +22,7 @@ import java.math.BigDecimal
 private const val FETCH_RATES_DELAY = 5 * 1000L // 5 seconds
 
 internal class ExchangeViewModel(
-    private val fetchCurrenciesUseCase: FetchCurrenciesUseCase,
+    private val fetchCurrenciesRatesUseCase: FetchCurrenciesRatesUseCase,
     private val feesRepository: FeesRepository
 ) : BaseViewModel<ExchangeUiState, ExchangeEvent, ExchangeEffect>(), DefaultLifecycleObserver {
 
@@ -89,7 +89,7 @@ internal class ExchangeViewModel(
     }
 
     private fun requestRates() {
-        fetchCurrenciesUseCase.invoke(Unit)
+        fetchCurrenciesRatesUseCase.invoke(Unit)
             .onStart {
                 setState {
                     copy(
@@ -133,7 +133,7 @@ internal class ExchangeViewModel(
     }
 
     private fun refreshRates() {
-        fetchCurrenciesUseCase.invoke(Unit)
+        fetchCurrenciesRatesUseCase.invoke(Unit)
             .onEach { result ->
                 when (result) {
                     is CurrenciesResult.Success -> {

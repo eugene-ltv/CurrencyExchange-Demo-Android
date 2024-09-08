@@ -7,5 +7,5 @@ import retrofit2.http.GET
 internal interface Api {
 
     @GET("currency-exchange-rates")
-    suspend fun getRates(): Response<CurrencyRates>
+    suspend fun getCurrenciesRates(): Response<CurrencyRates>
 }

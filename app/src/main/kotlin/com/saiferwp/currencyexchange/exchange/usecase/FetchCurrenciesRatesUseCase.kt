@@ -9,14 +9,14 @@ import retrofit2.Response
 import java.io.IOException
 import java.math.BigDecimal
 
-internal class FetchCurrenciesUseCase(
+internal class FetchCurrenciesRatesUseCase(
     private val api: Api
 ) : FlowUseCase<Unit, CurrenciesResult>() {
 
     override fun execute(parameters: Unit): Flow<CurrenciesResult> = flow {
         val response: Response<CurrencyRates>
         try {
-            response = api.getRates()
+            response = api.getCurrenciesRates()
         } catch (ex: IOException) {
             emit(CurrenciesResult.Failed)
             return@flow
